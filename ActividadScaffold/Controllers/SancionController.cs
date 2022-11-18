@@ -1,6 +1,7 @@
 ﻿using ActividadScaffold.DTOs;
 using ActividadScaffold.Entities;
 using ActividadScaffold.utils;
+using FluentValidation.Results;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Net;
@@ -15,8 +16,8 @@ namespace ActividadScaffold.Controllers
     {
         #region Propiedades
         private readonly ACT01Context _context;
-        ConductorValidator validator = new ConductorValidator();
-        ConductorValidator2 validator2 = new ConductorValidator2();
+        SancionesValidator validator = new SancionesValidator();
+        SancionesValidator2 validator2 = new SancionesValidator2();
         #endregion
 
         #region Constructor
@@ -38,7 +39,6 @@ namespace ActividadScaffold.Controllers
             var sanciones = await _context.Sanciones
                 .Select(s => new SancionesDTO
                 {
-                    FechaActual = s.FechaActual,
                     Sancion = s.Sancion,
                     Valor = s.Valor
                 }).ToListAsync();
@@ -55,11 +55,11 @@ namespace ActividadScaffold.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet("{id}")]
-        public async Task<ActionResult<Conductor>> Get(int id)
+        public async Task<ActionResult<Sancione>> Get(int id)
         {
-            var conductor = await _context.Conductors.FindAsync(id);
+            var sanciones = await _context.Sanciones.FindAsync(id);
 
-            if (conductor != null) { return Ok(conductor); }
+            if (sanciones != null) { return Ok(sanciones); }
             else { return NotFound(); }
         }
 
@@ -72,11 +72,11 @@ namespace ActividadScaffold.Controllers
         /// <returns></returns>
         [HttpPost]
         //public async Task<HttpStatusCode> Post(Conductor conductor)
-        public async Task<HttpStatusCode> Post(ConductorDTO conductor)
+        public async Task<HttpStatusCode> Post(SancionesDTO sanciones)
         {
             try
             {
-                ValidationResult result = validator.Validate(conductor);
+                ValidationResult result = validator.Validate(sanciones);
 
                 if (!result.IsValid)
                 {
@@ -87,19 +87,13 @@ namespace ActividadScaffold.Controllers
                 }
                 else
                 {
-                    var entity = new Conductor()
+                    var entity = new Sancione()
                     {
-                        Identificacion = conductor.Identificacion,
-                        Nombre = conductor.Nombre,
-                        Apellido = conductor.Apellido,
-                        Direccion = conductor.Direccion,
-                        Telefono = conductor.Telefono,
-                        Email = conductor.Email,
-                        Activo = conductor.Activo,
-                        MatriculaId = conductor.MatriculaId
+                        Sancion = sanciones.Sancion,
+                        Valor = sanciones.Valor
                     };
 
-                    _context.Conductors.Add(entity);
+                    _context.Sanciones.Add(entity);
                     await _context.SaveChangesAsync();
                     return HttpStatusCode.Created;
                 }
@@ -116,11 +110,11 @@ namespace ActividadScaffold.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpPut("{id}")]
-        public async Task<HttpStatusCode> Put(Conductor conductor)
+        public async Task<HttpStatusCode> Put(Sancione sanciones)
         {
             try
             {
-                ValidationResult result = validator2.Validate(conductor);
+                ValidationResult result = validator2.Validate(sanciones);
 
                 if (!result.IsValid)
                 {
@@ -131,7 +125,7 @@ namespace ActividadScaffold.Controllers
                 }
                 else
                 {
-                    _context.Entry(conductor).State = EntityState.Modified;
+                    _context.Entry(sanciones).State = EntityState.Modified;
                     await _context.SaveChangesAsync();
                     return HttpStatusCode.Accepted;
                 }
@@ -154,9 +148,9 @@ namespace ActividadScaffold.Controllers
         [HttpDelete("{id}")]
         public async Task<HttpStatusCode> Delete(int id)
         {
-            var entity = await _context.Conductors.FindAsync(id);
+            var entity = await _context.Sanciones.FindAsync(id);
 
-            _context.Conductors.Remove(entity);
+            _context.Sanciones.Remove(entity);
             await _context.SaveChangesAsync();
             return HttpStatusCode.OK;
         }

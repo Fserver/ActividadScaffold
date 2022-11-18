@@ -1,11 +1,11 @@
 ﻿using ActividadScaffold.DTOs;
 using ActividadScaffold.Entities;
+using ActividadScaffold.utils;
+using FluentValidation.Results;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System;
 using System.Net;
-
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace ActividadScaffold.Controllers
 {
@@ -13,16 +13,24 @@ namespace ActividadScaffold.Controllers
     [ApiController]
     public class MatriculaController : ControllerBase
     {
+        #region Propiedades
         private readonly ACT01Context _context;
+        MatriculaValidator validator = new MatriculaValidator();
+        #endregion
 
+        #region Constructor
         public MatriculaController(ACT01Context context)
         {
             _context = context;
         }
+        #endregion
 
-
-
+        #region Métodos
         // GET: api/<MatriculaController>
+        /// <summary>
+        /// <method="Get"></method>
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
         public async Task<ActionResult<IEnumerable<MatriculaDTO>>> Get()
         {
@@ -42,6 +50,10 @@ namespace ActividadScaffold.Controllers
 
 
         // GET api/<MatriculaController>/5
+        /// <summary>
+        /// <method="GetById"></method>
+        /// </summary>
+        /// <returns></returns>
         [HttpGet("{id}")]
         public async Task<ActionResult<Matricula>> Get(int id)
         {
@@ -54,42 +66,81 @@ namespace ActividadScaffold.Controllers
 
 
         // POST api/<MatriculaController>
+        /// <summary>
+        /// <method="Post"></method>
+        /// </summary>
+        /// <returns></returns>
         [HttpPost]
         public async Task<HttpStatusCode> Post(Matricula matricula)
         {
             try
             {
-                _context.Matriculas.Add(matricula);
-                await _context.SaveChangesAsync();
+                ValidationResult result = validator.Validate(matricula);
+
+                if (!result.IsValid)
+                {
+                    foreach (var failure in result.Errors)
+                    {
+                        Console.WriteLine("Property " + failure.PropertyName + " failed validation. Error was: " + failure.ErrorMessage);
+                    }
+                }
+                else
+                {
+                    _context.Matriculas.Add(matricula);
+                    await _context.SaveChangesAsync();
+                    return HttpStatusCode.Created;
+                }
             }
             catch (Exception ex)
             {
                 throw new Exception(ex.Message);
             }
-            return HttpStatusCode.Created;
+            return HttpStatusCode.UnprocessableEntity;
         }
 
 
 
         // PUT api/<MatriculaController>/5
+        /// <summary>
+        /// <method="Put"></method>
+        /// </summary>
+        /// <returns></returns>
         [HttpPut("{id}")]
         public async Task<HttpStatusCode> Put(Matricula matricula)
         {
             try
             {
-                _context.Entry(matricula).State = EntityState.Modified;
-                await _context.SaveChangesAsync();
+                ValidationResult result = validator.Validate(matricula);
+
+                if (!result.IsValid)
+                {
+                    foreach (var failure in result.Errors)
+                    {
+                        Console.WriteLine("Property " + failure.PropertyName + " failed validation. Error was: " + failure.ErrorMessage);
+                    }
+                }
+                else
+                {
+                    _context.Entry(matricula).State = EntityState.Modified;
+                    await _context.SaveChangesAsync();
+                    return HttpStatusCode.OK;
+                }
+
             }
             catch (Exception ex)
             {
                 throw new Exception(ex.Message);
             }
-            return HttpStatusCode.Created;
+            return HttpStatusCode.NotModified;
         }
 
 
 
         // DELETE api/<MatriculaController>/5
+        /// <summary>
+        /// <method="Delete"></method>
+        /// </summary>
+        /// <returns></returns>
         [HttpDelete("{id}")]
         public async Task<HttpStatusCode> Delete(int id)
         {
@@ -99,5 +150,6 @@ namespace ActividadScaffold.Controllers
             await _context.SaveChangesAsync();
             return HttpStatusCode.OK;
         }
+        #endregion
     }
 }

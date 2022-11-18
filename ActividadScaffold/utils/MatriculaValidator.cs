@@ -16,6 +16,5 @@ namespace ActividadScaffold.utils
 
             RuleFor(m => m.Activo).NotNull();
         }
-
     }
 }

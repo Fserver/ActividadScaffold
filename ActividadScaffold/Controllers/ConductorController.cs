@@ -6,19 +6,22 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Net;
 
+// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+
 namespace ActividadScaffold.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class MatriculaController : ControllerBase
+    public class ConductorController : ControllerBase
     {
         #region Propiedades
         private readonly ACT01Context _context;
-        MatriculaValidator validator = new MatriculaValidator();
+        ConductorValidator validator = new ConductorValidator();
+        ConductorValidator2 validator2 = new ConductorValidator2();
         #endregion
 
         #region Constructor
-        public MatriculaController(ACT01Context context)
+        public ConductorController(ACT01Context context)
         {
             _context = context;
         }
@@ -31,18 +34,21 @@ namespace ActividadScaffold.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<MatriculaDTO>>> Get()
+        public async Task<ActionResult<IEnumerable<ConductorDTO>>> Get()
         {
-            var matriculas = await _context.Matriculas
-                .Select(m => new MatriculaDTO
+            var conductores = await _context.Conductors
+                .Select(c => new ConductorDTO
                 {
-                    Numero = m.Numero,
-                    FechaExpedicion = m.FechaExpedicion,
-                    ValidaHasta = m.ValidaHasta,
-                    Activo = m.Activo
+                    Identificacion = c.Identificacion,
+                    Nombre = c.Nombre,
+                    Apellido = c.Apellido,
+                    Telefono = c.Telefono,
+                    Email = c.Email,
+                    Activo = c.Activo,
+                    MatriculaId = c.MatriculaId
                 }).ToListAsync();
 
-            if (matriculas != null) { return Ok(matriculas); }
+            if (conductores != null) { return Ok(conductores); }
             else { return NotFound(); }
         }
 
@@ -54,11 +60,11 @@ namespace ActividadScaffold.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet("{id}")]
-        public async Task<ActionResult<Matricula>> Get(int id)
+        public async Task<ActionResult<Conductor>> Get(int id)
         {
-            var matricula = await _context.Matriculas.FindAsync(id);
+            var conductor = await _context.Conductors.FindAsync(id);
 
-            if (matricula != null) { return Ok(matricula); }
+            if (conductor != null) { return Ok(conductor); }
             else { return NotFound(); }
         }
 
@@ -70,11 +76,12 @@ namespace ActividadScaffold.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpPost]
-        public async Task<HttpStatusCode> Post(Matricula matricula)
+        //public async Task<HttpStatusCode> Post(Conductor conductor)
+        public async Task<HttpStatusCode> Post(ConductorDTO conductor)
         {
             try
             {
-                ValidationResult result = validator.Validate(matricula);
+                ValidationResult result = validator.Validate(conductor);
 
                 if (!result.IsValid)
                 {
@@ -85,15 +92,24 @@ namespace ActividadScaffold.Controllers
                 }
                 else
                 {
-                    _context.Matriculas.Add(matricula);
+                    var entity = new Conductor()
+                    {
+                        Identificacion = conductor.Identificacion,
+                        Nombre = conductor.Nombre,
+                        Apellido = conductor.Apellido,
+                        Direccion = conductor.Direccion,
+                        Telefono = conductor.Telefono,
+                        Email = conductor.Email,
+                        Activo = conductor.Activo,
+                        MatriculaId = conductor.MatriculaId
+                    };
+
+                    _context.Conductors.Add(entity);
                     await _context.SaveChangesAsync();
                     return HttpStatusCode.Created;
                 }
             }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
+            catch (Exception ex) { throw new Exception(ex.Message); }
             return HttpStatusCode.UnprocessableEntity;
         }
 
@@ -105,11 +121,11 @@ namespace ActividadScaffold.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpPut("{id}")]
-        public async Task<HttpStatusCode> Put(Matricula matricula)
+        public async Task<HttpStatusCode> Put(Conductor conductor)
         {
             try
             {
-                ValidationResult result = validator.Validate(matricula);
+                ValidationResult result = validator2.Validate(conductor);
 
                 if (!result.IsValid)
                 {
@@ -120,9 +136,9 @@ namespace ActividadScaffold.Controllers
                 }
                 else
                 {
-                    _context.Entry(matricula).State = EntityState.Modified;
+                    _context.Entry(conductor).State = EntityState.Modified;
                     await _context.SaveChangesAsync();
-                    return HttpStatusCode.OK;
+                    return HttpStatusCode.Accepted;
                 }
 
             }
@@ -143,9 +159,9 @@ namespace ActividadScaffold.Controllers
         [HttpDelete("{id}")]
         public async Task<HttpStatusCode> Delete(int id)
         {
-            var entity = await _context.Matriculas.FindAsync(id);
+            var entity = await _context.Conductors.FindAsync(id);
 
-            _context.Matriculas.Remove(entity);
+            _context.Conductors.Remove(entity);
             await _context.SaveChangesAsync();
             return HttpStatusCode.OK;
         }

@@ -1,7 +1,9 @@
+/*
+    scaffold-DbContext "server=P553D28;user=yo;password=123;database=ACT01" Microsoft.EntityFrameworkCore.SqlServer -OutputDir Entities -f
+ */
+
 using ActividadScaffold.Entities;
-using FluentValidation.AspNetCore;
 using Microsoft.EntityFrameworkCore;
-using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
